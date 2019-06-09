@@ -77,21 +77,32 @@ class ALLDetection(VisionDataset):
         pre_target = self.parse_xml(
             ET.parse(self.annotations[index]).getroot())
         objs = pre_target["annotation"]["object"]
+        # 为了防止出现单个框的时候，将字典转成列表，防止出错
+        if isinstance(objs, dict):
+            objs = [objs]
         num_objs = len(objs)
         boxes = []
         labels = []
-        for i in range(num_objs):
-            xmin = float(objs[i]["bndbox"]["xmin"])
-            ymin = float(objs[i]["bndbox"]["ymin"])
-            xmax = float(objs[i]["bndbox"]["xmax"])
-            ymax = float(objs[i]["bndbox"]["ymax"])
-            boxes.append([xmin, ymin, xmax, ymax])
+        try:
+            for i in range(num_objs):
+                xmin = float(objs[i]["bndbox"]["xmin"])
+                ymin = float(objs[i]["bndbox"]["ymin"])
+                xmax = float(objs[i]["bndbox"]["xmax"])
+                ymax = float(objs[i]["bndbox"]["ymax"])
+                box_ws = xmax - xmin
+                box_hs = ymax - ymin
+                if box_ws > 50 and box_hs > 50:
+                    boxes.append([xmin, ymin, xmax, ymax])
 
-            name = objs[i]["name"]
-            labels.append(OPT.box_label_names.index(name))
+                    name = objs[i]["name"]
+                    labels.append(OPT.box_label_names.index(name))
+        except KeyError:
+            import ipdb; ipdb.set_trace()
 
         # 转为torch张量
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
+        boxes[:, [0, 2]] = boxes[:, [0, 2]].clamp(min=0, max=1920)
+        boxes[:, [1, 3]] = boxes[:, [1, 3]].clamp(min=0, max=1200)
         labels = torch.as_tensor(labels, dtype=torch.int64)
         target = {}
         target["boxes"] = boxes
