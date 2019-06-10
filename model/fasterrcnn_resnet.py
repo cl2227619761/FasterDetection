@@ -61,7 +61,7 @@ def main():
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                    step_size=3,
                                                    gamma=0.1)
-    num_epochs = 10
+    num_epochs = 50
 
     for epoch in range(num_epochs):
         train_one_epoch(model, optimizer, dataloader,

@@ -9,7 +9,8 @@ class Config:
     # 数据集相关的配置
     # root = "/home/caolei/code/ALL_data/VOC2007/"
     root = "/home/dl/code/caolei/ALL_data/VOC2007/"
-    image_set = "ALL_train"
+    # image_set = "ALL_train"
+    image_set = "ALL"
     # 数据集标签类别
     box_label_names = ("正常", "异常")
 
