@@ -14,6 +14,7 @@ from tools import utils
 sys.path.append("../")
 try:
     from data.data import ALLDetection
+    from myconfig.config import OPT
 except Exception:
     raise
 
@@ -45,14 +46,19 @@ def main():
     # 打乱并且划分数据集
     indices = torch.randperm(len(dataset)).tolist()
     dataset = torch.utils.data.Subset(dataset, indices[:-50])
-    dataset_test = torch.utils.data.Subset(dataset_test, indices[-50:])
+    dataset_val = torch.utils.data.Subset(dataset_test, indices[-50:-25])
+    dataset_test = torch.utils.data.Subset(dataset_test, indices[-25:])
 
     dataloader = torch.utils.data.DataLoader(
         dataset, batch_size=2, shuffle=True, num_workers=4,
         collate_fn=utils.collate_fn)
+    dataloader_val = torch.utils.data.DataLoader(
+        dataset_val, batch_size=1, shuffle=False, num_workers=4,
+        collate_fn=utils.collate_fn)
     dataloader_test = torch.utils.data.DataLoader(
         dataset_test, batch_size=1, shuffle=False, num_workers=4,
-        collate_fn=utils.collate_fn)
+        collate_fn=utils.collate_fn
+    )
     model.to(device)
 
     params = [p for p in model.parameters() if p.requires_grad]
@@ -61,13 +67,13 @@ def main():
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                    step_size=3,
                                                    gamma=0.1)
-    num_epochs = 50
+    num_epochs = OPT.num_epochs
 
     for epoch in range(num_epochs):
         train_one_epoch(model, optimizer, dataloader,
                         device, epoch, print_freq=10)
         lr_scheduler.step()
-        evaluate(model, dataloader_test, device=device)
+        evaluate(model, dataloader_val, device=device)
     print("训练完成")
 
 
