@@ -104,9 +104,15 @@ class ALLDetection(VisionDataset):
         boxes[:, [0, 2]] = boxes[:, [0, 2]].clamp(min=0, max=1920)
         boxes[:, [1, 3]] = boxes[:, [1, 3]].clamp(min=0, max=1200)
         labels = torch.as_tensor(labels, dtype=torch.int64)
+        image_id = torch.tensor([index])
+        area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
+        iscrowd = torch.zeros((num_objs, ), dtype=torch.int64)
         target = {}
         target["boxes"] = boxes
         target["labels"] = labels
+        target["image_id"] = image_id
+        target["area"] = area
+        target["iscrowd"] = iscrowd
 
         if self.transforms is not None:
             img, target = self.transforms(img, target)
