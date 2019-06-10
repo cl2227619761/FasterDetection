@@ -38,13 +38,14 @@ def get_transform(train):
 
 def main():
     """训练主函数"""
-    device = torch.device("cpu")
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
     dataset = ALLDetection(transforms=get_transform(train=True))
     dataset_test = ALLDetection(transforms=get_transform(train=False))
     # 打乱并且划分数据集
     indices = torch.randperm(len(dataset)).tolist()
     dataset = torch.utils.data.Subset(dataset, indices[:-50])
-    dataset_test = torch.utils.data.Subset(dataset, indices[-50:])
+    dataset_test = torch.utils.data.Subset(dataset_test, indices[-50:])
 
     dataloader = torch.utils.data.DataLoader(
         dataset, batch_size=2, shuffle=True, num_workers=4,
