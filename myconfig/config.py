@@ -12,7 +12,10 @@ class Config:
     # image_set = "ALL_train"
     image_set = "ALL"
     # 数据集标签类别
-    box_label_names = ("正常", "异常")
+    box_label_names = ("__background__", "正常", "异常")
+
+    # 模型训练相关的参数
+    num_epochs = 15
 
 
 OPT = Config()
