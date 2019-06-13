@@ -5,6 +5,11 @@ import torch
 
 import torchvision.models.detection.mask_rcnn
 
+sys.path.append("/home/dl/code/caolei/FasterDetection/mymodel/")
+sys.path.append("/home/dl/code/caolei/FasterDetection/plottool/")
+
+
+from nms import box_nms
 from tools.coco_utils import get_coco_api_from_dataset
 from tools.coco_eval import CocoEvaluator
 from tools import utils
@@ -70,7 +75,7 @@ def _get_iou_types(model):
 
 
 @torch.no_grad()
-def evaluate(model, data_loader, device):
+def evaluate(model, data_loader, device, own_mAP=True):
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
@@ -90,6 +95,15 @@ def evaluate(model, data_loader, device):
         torch.cuda.synchronize()
         model_time = time.time()
         outputs = model(image)
+        if own_mAP:
+            for output in outputs:
+                box = output["boxes"]
+                score = output["scores"]
+                label = output["labels"]
+                keep = box_nms(box, score)
+                output["boxes"] = box[keep]
+                output["scores"] = score[keep]
+                output["labels"] = label[keep]
 
         outputs = [{k: v.to(cpu_device)
                     for k, v in t.items()} for t in outputs]
